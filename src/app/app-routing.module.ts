@@ -225,7 +225,7 @@ const routes: Routes = [
     redirectTo: 'page-not-found'
   },
 ];
-
+ 
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
