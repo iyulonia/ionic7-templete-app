@@ -14,7 +14,8 @@ import {WeatherComponent} from './weather.component'
     FormsModule,
     IonicModule,
     WeatherPageRoutingModule
-  ]
+  ],
+  exports: [WeatherComponent]
 })
 export class WeatherModule { }
 
