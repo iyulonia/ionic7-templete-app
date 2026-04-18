@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AlertController } from '@ionic/angular';
-
+import { TranslateService } from '@ngx-translate/core';
 interface WeatherData {
   temperature: number;
   humidity: number;
@@ -20,7 +20,7 @@ interface WeatherData {
 
 export class WeatherComponent implements OnInit, OnDestroy {
   
-    weatherData: WeatherData | null = null;
+  weatherData: WeatherData | null = null;
   currentCity: string = 'Moscow';
   temperature: number = 0;
   feelsLike: number = 0;
@@ -33,7 +33,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
   
   private updateInterval: any;
 
-  constructor(private alertController: AlertController) {}
+  constructor(private alertController: AlertController, private translate:TranslateService) {}
 
   ngOnInit() {
     this.loadWeatherData();
@@ -61,7 +61,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
         } else if (response.status === 401) {
           throw new Error('Неверный API ключ');
         } else {
-          throw new Error('Ошибка загрузки данных');
+          throw new Error(this.translate.instant('WEATHER.ERROR'));
         }
       }
       
@@ -86,7 +86,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
       
     } catch (error: any) {
       console.error('Ошибка:', error);
-      this.errorMessage = error.message || 'Не удалось загрузить погоду';
+      this.errorMessage = error.message || this.translate.instant('WEATHER.LOADING');
     } finally {
       this.isLoading = false;
     }
@@ -100,7 +100,7 @@ export class WeatherComponent implements OnInit, OnDestroy {
       const response = await fetch(forecastUrl);
       
       if (!response.ok) {
-        throw new Error('Не удалось загрузить прогноз');
+        throw new Error(this.translate.instant('WEATHER.ERROR'));
       }
       
       const data = await response.json();
@@ -127,41 +127,45 @@ export class WeatherComponent implements OnInit, OnDestroy {
   }
 
   
-  getMockForecast() {
-    const dates = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-    return dates.map((date, index) => ({
-      date: date,
-      dayTemp: 18 - index,
-      nightTemp: 10 - index,
-      condition: 'ясно',
-      icon: ''
-    }));
-  }
+getMockForecast(): any[] {
 
- 
+  const weekdays = this.translate.instant('WEATHER.WEEKDAYS');
+  
+  const dates = Array.isArray(weekdays) ? weekdays : ["lun, mar, mer, gio, ven, sab, dom"];
+  
+  return dates.map((date: string, index: number) => ({
+    date: date,
+    dayTemp: Math.round(20 - index * 1.5),
+    nightTemp: Math.round(12 - index),
+    condition: 'ясно',
+    icon: ''
+  }));
+}
   getFeelsLikeText(): string {
-    if (!this.weatherData) return 'Загрузка...';
+    if (!this.weatherData) return this.translate.instant('WEATHER.LOADING');
     
     const diff = this.feelsLike - this.temperature;
+    const feelsLikeText = this.translate.instant('WEATHER.FEELS_LIKE');
+    const butActually = this.translate.instant('WEATHER.BUT_ACTUALLY');
     
     if (diff > 1) {
-      return `Ощущается как ${this.feelsLike}°, но на самом деле ${this.temperature}° (теплее из-за влажности)`;
+      return `${feelsLikeText} ${this.feelsLike}°, ${butActually} ${this.temperature}°`;
     } else if (diff < -1) {
-      return `Ощущается как ${this.feelsLike}°, но на самом деле ${this.temperature}° (холоднее из-за ветра)`;
+      return `${feelsLikeText} ${this.feelsLike}°, ${butActually} ${this.temperature}°`;
     } else {
-      return `Ощущается как ${this.temperature}°, температура комфортная`;
+      return `${feelsLikeText} ${this.temperature}°${butActually} `;
     }
   }
 
   // Диалог выбора города
   async changeCity() {
     const alert = await this.alertController.create({
-      header: 'Выберите город',
+      header: this.translate.instant('WEATHER.CITY_PLACEHOLDER'),
       inputs: [
         {
           name: 'city',
           type: 'text',
-          placeholder: 'Введите название города',
+          placeholder:this.translate.instant('WEATHER.CITY_PLACEHOLDER') ,
           value: this.currentCity
         }
       ],

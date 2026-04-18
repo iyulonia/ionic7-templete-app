@@ -144,4 +144,15 @@
     "APPLY_BUTTON": "Applica risultato",
     "CLOSE_BUTTON": "Chiudi"
   }
+  ,"WEATHER": {
+  "COMPONENT_TITLE": "Meteo",
+  "LOADING": "Caricamento meteo...",
+  "ERROR": "Impossibile caricare i dati meteo",
+  "CITY_PLACEHOLDER": "Seleziona città",
+  "FEELS_LIKE": "Percepita come",
+  "BUT_ACTUALLY": "ma in realtà",
+  "CITY_NOT_FOUND": "Città non trovata",
+  "WEEKDAY": ["lun, mar, mer, gio, ven, sab, dom"],
+  "REPEAT": "Ripeti"
+}
 }

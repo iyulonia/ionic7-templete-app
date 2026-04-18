@@ -4,6 +4,7 @@ import { WeatherPageRoutingModule } from './weather.routing.module';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import {WeatherComponent} from './weather.component'
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -13,7 +14,8 @@ import {WeatherComponent} from './weather.component'
     CommonModule,
     FormsModule,
     IonicModule,
-    WeatherPageRoutingModule
+    WeatherPageRoutingModule,
+    TranslateModule
   ],
   exports: [WeatherComponent]
 })
