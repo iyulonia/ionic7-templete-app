@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+
 interface WeatherData {
   temperature: number;
   humidity: number;
@@ -11,13 +12,11 @@ interface WeatherData {
   feelsLike: number;
 }
 
-
 @Component({
   selector: 'app-weather',
   templateUrl: './weather.component.html',
   styleUrls: ['./weather.component.scss'],
 })
-
 export class WeatherComponent implements OnInit, OnDestroy {
   
   weatherData: WeatherData | null = null;
@@ -28,12 +27,22 @@ export class WeatherComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   weeklyForecast: any[] = [];
   
- 
   private apiKey: string = '433997e030794166ac495549261104';
-  
   private updateInterval: any;
 
-  constructor(private alertController: AlertController, private translate:TranslateService) {}
+
+  monday: string = '';
+  tuesday: string = '';
+  wednesday: string = '';
+  thursday: string = '';
+  friday: string = '';
+  saturday: string = '';
+  sunday: string = '';
+  weekdaysArray: string[] = [];
+
+  constructor(private alertController: AlertController, private translate: TranslateService) {
+    this.initWeekdays(); 
+  }
 
   ngOnInit() {
     this.loadWeatherData();
@@ -46,7 +55,26 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Загрузка текущей погоды
+  initWeekdays() {
+    this.monday = this.translate.instant('WEATHER.MONDAY');
+    this.tuesday = this.translate.instant('WEATHER.TUESDAY');
+    this.wednesday = this.translate.instant('WEATHER.WEDNESDAY');
+    this.thursday = this.translate.instant('WEATHER.THURSDAY');
+    this.friday = this.translate.instant('WEATHER.FRIDAY');
+    this.saturday = this.translate.instant('WEATHER.SATURDAY');
+    this.sunday = this.translate.instant('WEATHER.SUNDAY');
+    
+    this.weekdaysArray = [
+      this.monday,
+      this.tuesday,
+      this.wednesday,
+      this.thursday,
+      this.friday,
+      this.saturday,
+      this.sunday
+    ];
+  }
+
   async loadWeatherData() {
     this.isLoading = true;
     this.errorMessage = '';
@@ -67,21 +95,19 @@ export class WeatherComponent implements OnInit, OnDestroy {
       
       const data = await response.json();
       
-  
       this.weatherData = {
         temperature: Math.round(data.current.temp_c),
         condition: data.current.condition.text,
         humidity: data.current.humidity,
-        windSpeed: data.current.wind_kph / 3.6, // 
+        windSpeed: data.current.wind_kph / 3.6,
         city: data.location.name,
-        icon: 'https:' + data.current.condition.icon, // 
+        icon: 'https:' + data.current.condition.icon,
         feelsLike: Math.round(data.current.feelslike_c)
       };
       
       this.temperature = this.weatherData.temperature;
       this.feelsLike = this.weatherData.feelsLike;
       
-      // Загружаем прогноз
       await this.loadForecast();
       
     } catch (error: any) {
@@ -92,10 +118,8 @@ export class WeatherComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Загрузка прогноза на неделю
   async loadForecast() {
     try {
-     
       const forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${this.apiKey}&q=${encodeURIComponent(this.currentCity)}&days=7&lang=ru&aqi=no&alerts=no`;
       const response = await fetch(forecastUrl);
       
@@ -105,7 +129,6 @@ export class WeatherComponent implements OnInit, OnDestroy {
       
       const data = await response.json();
       
-      // Обработка прогноза
       this.weeklyForecast = data.forecast.forecastday.map((day: any) => {
         const date = new Date(day.date);
         const dayName = date.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
@@ -121,26 +144,20 @@ export class WeatherComponent implements OnInit, OnDestroy {
       
     } catch (error) {
       console.error('Ошибка прогноза:', error);
-      // Заглушка, если прогноз не загрузился
       this.weeklyForecast = this.getMockForecast();
     }
   }
+  
+  getMockForecast(): any[] {
+    return this.weekdaysArray.map((date: string, index: number) => ({
+      date: date,
+      dayTemp: 18 - index,
+      nightTemp: 10 - index,
+      condition: 'ясно',
+      icon: ''
+    }));
+  }
 
-  
-getMockForecast(): any[] {
-
-  const weekdays = this.translate.instant('WEATHER.WEEKDAYS');
-  
-  const dates = Array.isArray(weekdays) ? weekdays : ["lun, mar, mer, gio, ven, sab, dom"];
-  
-  return dates.map((date: string, index: number) => ({
-    date: date,
-    dayTemp: Math.round(20 - index * 1.5),
-    nightTemp: Math.round(12 - index),
-    condition: 'ясно',
-    icon: ''
-  }));
-}
   getFeelsLikeText(): string {
     if (!this.weatherData) return this.translate.instant('WEATHER.LOADING');
     
@@ -153,11 +170,10 @@ getMockForecast(): any[] {
     } else if (diff < -1) {
       return `${feelsLikeText} ${this.feelsLike}°, ${butActually} ${this.temperature}°`;
     } else {
-      return `${feelsLikeText} ${this.temperature}°${butActually} `;
+      return `${feelsLikeText} ${this.temperature}° ${butActually}`;
     }
   }
 
-  // Диалог выбора города
   async changeCity() {
     const alert = await this.alertController.create({
       header: this.translate.instant('WEATHER.CITY_PLACEHOLDER'),
@@ -165,7 +181,7 @@ getMockForecast(): any[] {
         {
           name: 'city',
           type: 'text',
-          placeholder:this.translate.instant('WEATHER.CITY_PLACEHOLDER') ,
+          placeholder: this.translate.instant('WEATHER.CITY_PLACEHOLDER'),
           value: this.currentCity
         }
       ],
@@ -189,14 +205,12 @@ getMockForecast(): any[] {
     await alert.present();
   }
 
-  
   startAutoUpdate() {
     this.updateInterval = setInterval(() => {
       this.loadWeatherData();
     }, 600000);
   }
 
-  
   refreshWeather() {
     this.loadWeatherData();
   }
